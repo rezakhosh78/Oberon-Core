@@ -1,30 +1,24 @@
-# Oberon
+# Oberon 🚀
+
+[![Build](https://github.com/oberon-core/oberon/actions/workflows/build.yml/badge.svg)](https://github.com/oberon-core/oberon/actions/workflows/build.yml) [![Version](https://img.shields.io/badge/version-0.4.3-6f42c1)](https://github.com/oberon-core/oberon) [![Go](https://img.shields.io/badge/Go-1.25%2B-00ADD8?logo=go)](https://go.dev/) [![License](https://img.shields.io/github/license/oberon-core/oberon)](LICENSE)
 
 **An AmneziaWG WARP client for profile management, endpoint discovery, and private local proxies.**
 
-[English](README.md) · [فارسی](README.fa.md)
+[🌐 English](README.md) · [فارسی](README.fa.md)
 
-Oberon creates and reuses WARP profiles, checks which endpoints complete an AmneziaWG handshake, and connects through local SOCKS5/HTTP proxies or a system tunnel.
+🌐 Oberon creates and reuses WARP profiles, checks which endpoints complete an AmneziaWG handshake, and connects through local SOCKS5/HTTP proxies or a system tunnel.
 
-## Highlights
+## ✨ Highlights
 
-- **One-time first-run setup:** the TUI registers and saves a profile only when no valid profile is found. Later connections reuse its key.
-- **Endpoint scan on every connection:** Oberon tests candidates, shows live progress, and selects the fastest successful handshake.
-- **Two connection modes:** local SOCKS5 and HTTP proxies, or a full-system tunnel on Linux and Windows.
-- **Profile control:** browse working endpoints, or create a fresh WARP key and apply it to a saved profile with a backup.
-- **Full-screen terminal UI:** English menus, consistent pages, colored scan progress, and animated registration and connection indicators.
+- 🪄 **One-time first-run setup:** the TUI registers and saves a profile only when no valid profile is found. Later connections reuse its key.
+- 🔎 **Endpoint scan on every connection:** Oberon tests candidates, shows live progress, and selects the fastest successful handshake.
+- 🔌 **Two connection modes:** local SOCKS5 and HTTP proxies, or a full-system tunnel on Linux and Windows.
+- 🔑 **Profile control:** browse working endpoints, or create a fresh WARP key and apply it to a saved profile with a backup.
+- 🎨 **Full-screen terminal UI:** English menus, consistent pages, colored scan progress, and animated registration and connection indicators.
 
-```mermaid
-flowchart TD
-  A["Saved profile or first-run registration"] --> B["Endpoint handshake scan"]
-  B --> C["Fastest working endpoint"]
-  C --> D["Oberon connection"]
-  D --> E["Local proxies or system tunnel"]
-```
+## 🚀 Quick start
 
-## Quick start
-
-### Build from source
+### 🛠️ Build from source
 
 Oberon requires **Go 1.25.0 or newer**.
 
@@ -47,7 +41,7 @@ go build -trimpath -o .\oberon.exe .
 .\oberon.exe
 ```
 
-## Connect with the TUI
+## ▶️ Connect with the TUI
 
 Run Oberon without arguments and choose **Connect Oberon**:
 
@@ -69,7 +63,7 @@ The saved WARP key is reused on later connections. Choose **Create WARP Key & Ap
 
 **Scan Endpoint & Manual Connection** lists working endpoints so you can choose one with the arrow keys and connect through it. If arrow-key navigation is unavailable, select an endpoint by number.
 
-## CLI reference
+## 💻 CLI reference
 
 | Command | What it does |
 | --- | --- |
@@ -83,7 +77,7 @@ The saved WARP key is reused on later connections. Choose **Create WARP Key & Ap
 
 `oberon warp create` is an alias for `oberon create`. `oberon run profile.conf` remains available as a legacy connection command.
 
-### Proxy-only connection
+### 🔌 Proxy-only connection
 
 Use one or both proxy flags:
 
@@ -95,7 +89,7 @@ oberon connect -config warp-awg.conf -socks 127.0.0.1:1717 -http 127.0.0.1:1718
 
 Proxy mode uses an in-memory tunnel. It does not change system routes, require Administrator or root privileges, or use Wintun.
 
-### Scan modes
+### 🔎 Scan modes
 
 - `-mode fast` checks Oberon’s curated endpoint pool.
 - `-mode all` checks a much wider address and port set and can take significantly longer.
@@ -107,7 +101,7 @@ oberon connect -config warp-awg.conf -mode all -workers 24 -timeout 1s
 
 A successful handshake measures endpoint reachability and latency; it is not a throughput benchmark.
 
-## Full-system tunnel requirements
+## 🛡️ Full-system tunnel requirements
 
 Full-system mode changes network routes and needs elevated permissions:
 
@@ -125,7 +119,7 @@ Use `arm64`, `x86`, or `arm` for the matching Windows build. If `oberon.exe` is 
 
 The build matrix includes Linux, Windows, macOS, FreeBSD, and OpenBSD targets. Full-system route setup is currently implemented for Linux and Windows.
 
-## Build and test
+## 🧪 Build and test
 
 ```sh
 go build -trimpath -o oberon .
@@ -135,13 +129,13 @@ go test ./...
 
 The build matrix is for POSIX shells. On Windows, build directly with Go or set the target environment variables in PowerShell.
 
-## Security and profile handling
+## 🔐 Security and profile handling
 
 - Generated `.conf` profiles contain a private key. Keep them private and do not commit profiles, `.bak` backups, or keys to a public repository.
 - Local proxies do not require authentication, so Oberon binds them to loopback addresses. They are intended for apps on the same computer.
 - Proxy listeners carry TCP traffic and are not a network-wide proxy.
 
-## Troubleshooting
+## 🧰 Troubleshooting
 
 - **No profile found:** place a valid `.conf` beside `oberon`/`oberon.exe` or run Oberon from the directory containing the profile. The TUI creates one automatically on first connection.
 - **No endpoint completes a handshake:** check network access, try `-mode all`, or scan again later. Endpoint availability can change.
@@ -151,7 +145,7 @@ The build matrix is for POSIX shells. On Windows, build directly with Go or set 
 
 When reporting an issue, include the OS, architecture, Oberon version, command used, and relevant error output. Remove private keys and account identifiers from logs and profiles first.
 
-## License and notices
+## 📜 License and notices
 
 Review `LICENSE` and `UPSTREAM_README.md` for the license terms and third-party notices included with the source.
 
