@@ -147,5 +147,5 @@ When reporting an issue, include the OS, architecture, Oberon version, command u
 
 ## 📜 License and notices
 
-Review `LICENSE` and `UPSTREAM_README.md` for the license terms and third-party notices included with the source.
+Made By `ReZa Kh` 
 
