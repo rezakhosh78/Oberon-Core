@@ -1,6 +1,6 @@
 # Oberon 
 
-[](https://github.com/oberon-core/oberon/actions/workflows/build.yml) [![Version](https://img.shields.io/badge/version-0.4.3-6f42c1)](https://github.com/oberon-core/oberon) [![Go](https://img.shields.io/badge/Go-1.25%2B-00ADD8?logo=go)](https://go.dev/) [![License](https://img.shields.io/github/license/oberon-core/oberon)](LICENSE)
+[](https://github.com/oberon-core/oberon/actions/workflows/build.yml) [![Version](https://img.shields.io/badge/version-0.4.3-6f42c1)](https://github.com/oberon-core/oberon) [![Go](https://img.shields.io/badge/Go-1.25%2B-00ADD8?logo=go)](https://go.dev/) 
 
 **An AmneziaWG WARP client for profile management, endpoint discovery, and private local proxies.**
 
