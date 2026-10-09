@@ -20,6 +20,11 @@ import (
 	"github.com/oberon-core/oberon/v1/tun/netstack"
 )
 
+const (
+	firstFallbackProxyPort = 1719
+	lastFallbackProxyPort  = 1818
+)
+
 func validateLocalProxyAddr(address string) error {
 	host, portText, err := net.SplitHostPort(address)
 	if err != nil {
@@ -37,6 +42,41 @@ func validateLocalProxyAddr(address string) error {
 		return fmt.Errorf("bind to a loopback address such as 127.0.0.1 or [::1] to keep the proxy private")
 	}
 	return nil
+}
+
+func listenLocalProxy(address, proxyName string) (net.Listener, string, error) {
+	listener, err := net.Listen("tcp", address)
+	if err == nil {
+		return listener, listener.Addr().String(), nil
+	}
+
+	if (address != defaultSOCKSAddress && address != defaultHTTPAddress) || !isAddressInUseError(err) {
+		return nil, "", fmt.Errorf("listen for %s proxy on %s: %w", proxyName, address, err)
+	}
+
+	host, _, splitErr := net.SplitHostPort(address)
+	if splitErr != nil {
+		return nil, "", fmt.Errorf("listen for %s proxy on %s: %w", proxyName, address, err)
+	}
+	var lastErr error
+	for port := firstFallbackProxyPort; port <= lastFallbackProxyPort; port++ {
+		candidate := net.JoinHostPort(host, strconv.Itoa(port))
+		listener, candidateErr := net.Listen("tcp", candidate)
+		if candidateErr == nil {
+			resolvedAddress := listener.Addr().String()
+			fmt.Fprintf(os.Stderr, "%s proxy address %s is occupied; using %s instead.\n", proxyName, address, resolvedAddress)
+			return listener, resolvedAddress, nil
+		}
+		lastErr = candidateErr
+	}
+	return nil, "", fmt.Errorf("listen for %s proxy on %s or fallback ports %d-%d: %w", proxyName, address, firstFallbackProxyPort, lastFallbackProxyPort, lastErr)
+}
+
+func isAddressInUseError(err error) bool {
+	message := strings.ToLower(err.Error())
+	return strings.Contains(message, "address already in use") ||
+		strings.Contains(message, "address is already in use") ||
+		strings.Contains(message, "only one usage of each socket address")
 }
 
 func runProxySession(cfg awgConfig, socksAddress, httpAddress string) error {
@@ -90,21 +130,21 @@ func runProxySession(cfg awgConfig, socksAddress, httpAddress string) error {
 		}
 	}()
 	if socksAddress != "" {
-		listener, err := net.Listen("tcp", socksAddress)
+		listener, resolvedAddress, err := listenLocalProxy(socksAddress, "SOCKS5")
 		if err != nil {
-			return fmt.Errorf("listen for SOCKS5 proxy on %s: %w", socksAddress, err)
+			return err
 		}
 		listeners = append(listeners, listener)
-		socksAddress = listener.Addr().String()
+		socksAddress = resolvedAddress
 	}
 	var httpServer *http.Server
 	if httpAddress != "" {
-		listener, err := net.Listen("tcp", httpAddress)
+		listener, resolvedAddress, err := listenLocalProxy(httpAddress, "HTTP")
 		if err != nil {
-			return fmt.Errorf("listen for HTTP proxy on %s: %w", httpAddress, err)
+			return err
 		}
 		listeners = append(listeners, listener)
-		httpAddress = listener.Addr().String()
+		httpAddress = resolvedAddress
 		httpServer = &http.Server{Handler: newHTTPProxyHandler(tnet), ReadHeaderTimeout: 10 * time.Second}
 	}
 
