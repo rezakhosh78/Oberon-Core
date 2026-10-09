@@ -1,7 +1,6 @@
-# Oberon 🚀
+# Oberon
 
-[![Build](https://github.com/oberon-core/oberon/actions/workflows/build.yml/badge.svg)](https://github.com/oberon-core/oberon/actions/workflows/build.yml) [![Version](https://img.shields.io/badge/version-0.4.3-6f42c1)](https://github.com/oberon-core/oberon) [![Go](https://img.shields.io/badge/Go-1.25%2B-00ADD8?logo=go)](https://go.dev/) [![License](https://img.shields.io/github/license/oberon-core/oberon)](LICENSE)
-
+[](https://github.com/oberon-core/oberon/actions/workflows/build.yml) [![Version](https://img.shields.io/badge/version-0.4.3-6f42c1)](https://github.com/oberon-core/oberon) [![Go](https://img.shields.io/badge/Go-1.25%2B-00ADD8?logo=go)](https://go.dev/)
 **کلاینت AmneziaWG WARP برای مدیریت پروفایل، اسکن اندپوینت و پراکسی محلی امن**
 
 [🌐 English](README.md) · [فارسی](README.fa.md)
@@ -151,12 +150,6 @@ bash ./scripts/build-matrix.sh ./dist
 ```
 
 اسکریپت ماتریس ساخت برای پوسته‌های POSIX است. در Windows می‌توانید با Go مستقیم بسازید یا متغیرهای هدف ساخت را در PowerShell تنظیم کنید.
-
-## 🚀 ساخت ریلیز در GitHub
-
-ورک‌فلو **Release Oberon** با push کردن تگ `vMAJOR.MINOR.PATCH` اجرا می‌شود؛ همچنین می‌توانید از مسیر **Actions → Release Oberon → Run workflow** آن را دستی اجرا کنید و نام تگ، مثل `v0.4.4`، را در فیلد `tag_name` وارد کنید.
-
-تگ باید با مقدار `Version` در `version.go` یکسان باشد. در اجرای دستی، اگر تگ وجود نداشته باشد روی کامیت انتخاب‌شده ساخته می‌شود؛ تگ موجود فقط وقتی پذیرفته می‌شود که به همان کامیت اشاره کند. ورک‌فلو تست‌ها و همهٔ هدف‌های `scripts/build-matrix.sh` را اجرا می‌کند، خروجی Android ARM64 را می‌سازد و آرشیوهای پلتفرم‌ها را آماده می‌کند. بستهٔ Termux ARM64 و فایل‌های اجرایی مستقل Windows با معماری‌های amd64، arm64 و 386 نیز به ریلیز افزوده می‌شوند. فایل‌های SHA-256 و `SHA256SUMS.txt` هم پیوست می‌شوند. آرشیوهای Windows شامل اسکریپت نصب Wintun هستند.
 
 ## 🔐 امنیت و نگهداری پروفایل
 
