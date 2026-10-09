@@ -45,7 +45,7 @@ func printCLIUsage() {
 Commands:
   create  Register WARP, scan endpoints, and save an AWG profile
   scan    Scan endpoints in an existing AWG profile
-  connect Scan on every run, then start the tunnel or local proxies
+  connect Scan on every run, then start a tunnel or local proxies (Android uses proxies)
   tui     Open the interactive terminal menu
 
 Examples:

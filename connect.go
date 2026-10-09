@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -32,6 +33,11 @@ func runConnectCLI(args []string) error {
 	}
 	if configPath == "" {
 		return fmt.Errorf("usage: oberon connect -config profile.conf [-mode fast|all] [-socks 127.0.0.1:1717] [-http 127.0.0.1:1718]")
+	}
+	if runtime.GOOS == "android" && *socks == "" && *httpProxy == "" {
+		*socks = defaultSOCKSAddress
+		*httpProxy = defaultHTTPAddress
+		fmt.Fprintln(os.Stderr, "Android/Termux detected; using local SOCKS5 and HTTP proxies (no system TUN).")
 	}
 	cfg, err := parseAWGConfig(configPath)
 	if err != nil {

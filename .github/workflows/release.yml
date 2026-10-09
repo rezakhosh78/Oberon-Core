@@ -7,9 +7,14 @@ on:
   workflow_dispatch:
     inputs:
       tag_name:
-        description: "Release tag, matching version.go (for example, v0.4.4)"
+        description: "Release tag, matching version.go (for example, v0.4.3)"
         required: true
         type: string
+      replace_existing_tag:
+        description: "Move an existing tag to this workflow's source commit"
+        required: false
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -22,8 +27,11 @@ jobs:
   validate:
     name: Validate release tag
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       tag_name: ${{ steps.resolve.outputs.tag_name }}
+      source_sha: ${{ steps.resolve.outputs.source_sha }}
     steps:
       - name: Resolve and validate tag name
         id: resolve
@@ -31,7 +39,9 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           INPUT_TAG: ${{ inputs.tag_name }}
+          REPLACE_EXISTING_TAG: ${{ inputs.replace_existing_tag }}
           REF_NAME: ${{ github.ref_name }}
+          SOURCE_SHA: ${{ github.sha }}
         run: |
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
             tag="$INPUT_TAG"
@@ -40,11 +50,12 @@ jobs:
           fi
 
           if [[ ! "$tag" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
-            echo "Tag must use the vMAJOR.MINOR.PATCH format, such as v0.4.4." >&2
+            echo "Tag must use the vMAJOR.MINOR.PATCH format, such as v0.4.3." >&2
             exit 1
           fi
 
           echo "tag_name=$tag" >> "$GITHUB_OUTPUT"
+          echo "source_sha=$SOURCE_SHA" >> "$GITHUB_OUTPUT"
 
       - name: Check out the selected source commit
         uses: actions/checkout@v4
@@ -56,6 +67,8 @@ jobs:
         shell: bash
         env:
           TAG_NAME: ${{ steps.resolve.outputs.tag_name }}
+          SOURCE_SHA: ${{ steps.resolve.outputs.source_sha }}
+          REPLACE_EXISTING_TAG: ${{ inputs.replace_existing_tag }}
         run: |
           version="$(sed -n 's/^const Version = "\([^"]*\)"$/\1/p' version.go)"
           if [[ -z "$version" || "$TAG_NAME" != "v$version" ]]; then
@@ -63,13 +76,21 @@ jobs:
             exit 1
           fi
 
-          if git ls-remote --exit-code --tags origin "refs/tags/$TAG_NAME" >/dev/null 2>&1; then
+          remote_tag_oid="$(git ls-remote --refs origin "refs/tags/$TAG_NAME" | awk 'NR == 1 { print $1 }')"
+          if [[ -n "$remote_tag_oid" ]]; then
             git fetch --force origin "refs/tags/$TAG_NAME:refs/tags/$TAG_NAME"
             tag_commit="$(git rev-parse "$TAG_NAME^{commit}")"
-            source_commit="$(git rev-parse HEAD)"
+            source_commit="$(git rev-parse "$SOURCE_SHA^{commit}")"
             if [[ "$tag_commit" != "$source_commit" ]]; then
-              echo "Tag $TAG_NAME already points to a different commit." >&2
-              exit 1
+              if [[ "$REPLACE_EXISTING_TAG" != "true" ]]; then
+                echo "Tag $TAG_NAME already points to a different commit." >&2
+                echo "For workflow_dispatch, enable 'Move an existing tag' to update it to this source commit, or choose a new version." >&2
+                exit 1
+              fi
+
+              git push --force-with-lease="refs/tags/$TAG_NAME:$remote_tag_oid" \
+                origin "$source_commit:refs/tags/$TAG_NAME"
+              echo "Moved tag $TAG_NAME to $source_commit."
             fi
           fi
 
@@ -81,7 +102,7 @@ jobs:
       - name: Check out validated source commit
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ needs.validate.outputs.source_sha }}
           persist-credentials: false
 
       - name: Set up Go
@@ -154,7 +175,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.validate.outputs.tag_name }}
-          target_commitish: ${{ github.sha }}
+          target_commitish: ${{ needs.validate.outputs.source_sha }}
           name: Oberon ${{ needs.validate.outputs.tag_name }}
           draft: false
           prerelease: false

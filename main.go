@@ -104,6 +104,11 @@ func main() {
 		fmt.Printf("oberon %s\n\nUserspace AmneziaWG daemon for %s-%s.\nInformation available at https://amnezia.org\n", Version, runtime.GOOS, runtime.GOARCH)
 		return
 	}
+	if runtime.GOOS == "android" {
+		fmt.Fprintln(os.Stderr, "The Android/Termux build supports local SOCKS5/HTTP proxies only; it cannot create a system TUN.")
+		fmt.Fprintln(os.Stderr, "Use `oberon connect -config profile.conf` to scan and start proxies at 127.0.0.1:1717 and 127.0.0.1:1718.")
+		os.Exit(ExitSetupFailed)
+	}
 
 	warning()
 
