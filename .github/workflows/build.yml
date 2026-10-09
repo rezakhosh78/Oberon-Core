@@ -11,4 +11,4 @@ jobs:
         with:
           go-version-file: go.mod
       - run: go test ./...
-      - run: ./scripts/build-matrix.sh
+      - run: bash ./scripts/build-matrix.sh

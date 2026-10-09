@@ -1,6 +1,6 @@
-# Oberon 
+# Oberon 🚀
 
-[![Build](https://github.com/oberon-core/oberon/actions/workflows/build.yml/badge.svg)](https://github.com/oberon-core/oberon/actions/workflows/build.yml) [![Version](https://img.shields.io/badge/version-0.4.3-6f42c1)](https://github.com/oberon-core/oberon) [![Go](https://img.shields.io/badge/Go-1.25%2B-00ADD8?logo=go)](https://go.dev/)
+[![Build](https://github.com/oberon-core/oberon/actions/workflows/build.yml/badge.svg)](https://github.com/oberon-core/oberon/actions/workflows/build.yml) [![Version](https://img.shields.io/badge/version-0.4.4-6f42c1)](https://github.com/oberon-core/oberon) [![Go](https://img.shields.io/badge/Go-1.25%2B-00ADD8?logo=go)](https://go.dev/) [![License](https://img.shields.io/github/license/oberon-core/oberon)](LICENSE)
 
 **An AmneziaWG WARP client for profile management, endpoint discovery, and private local proxies.**
 
@@ -124,10 +124,16 @@ The build matrix includes Linux, Windows, macOS, FreeBSD, and OpenBSD targets. F
 ```sh
 go build -trimpath -o oberon .
 go test ./...
-./scripts/build-matrix.sh ./dist
+bash ./scripts/build-matrix.sh ./dist
 ```
 
 The build matrix is for POSIX shells. On Windows, build directly with Go or set the target environment variables in PowerShell.
+
+## 🚀 GitHub release
+
+The **Release Oberon** workflow runs when a `vMAJOR.MINOR.PATCH` tag is pushed, or manually from **Actions → Release Oberon → Run workflow**. Enter the release tag in the `tag_name` field, such as `v0.4.4`.
+
+The tag must match `Version` in `version.go`. For a manual run, a new tag is created at the selected commit; an existing tag is accepted only when it points to that same commit. The workflow runs tests, builds every target in `scripts/build-matrix.sh`, packages platform archives, and attaches standalone Windows `.exe` files for amd64, arm64, and 386 alongside the Windows archives. SHA-256 files and a combined `SHA256SUMS.txt` are included. Windows archives include the Wintun setup script.
 
 ## 🔐 Security and profile handling
 
