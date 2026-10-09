@@ -30,7 +30,8 @@ TARGETS = (
     ("openbsd", "386"),
 )
 
-DOCUMENTS = ("LICENSE", "README.md", "README.fa.md", "UPSTREAM_README.md")
+DOCUMENTS = ("LICENSE", "README.md", "README.fa.md")
+OPTIONAL_DOCUMENTS = ("UPSTREAM_README.md",)
 
 
 def package_target(
@@ -57,6 +58,10 @@ def package_target(
         shutil.copy2(binary, staging / executable_name)
         for document in DOCUMENTS:
             shutil.copy2(project_root / document, staging / document)
+        for document in OPTIONAL_DOCUMENTS:
+            source = project_root / document
+            if source.is_file():
+                shutil.copy2(source, staging / document)
 
         if windows:
             wintun_script = project_root / "scripts" / "setup-wintun.ps1"
