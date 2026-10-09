@@ -18,6 +18,7 @@ TARGETS = (
     ("linux", "arm"),
     ("linux", "386"),
     ("linux", "riscv64"),
+    ("android", "arm64"),
     ("windows", "amd64"),
     ("windows", "arm64"),
     ("windows", "386"),
@@ -30,7 +31,7 @@ TARGETS = (
     ("openbsd", "386"),
 )
 
-DOCUMENTS = ("LICENSE", "README.md", "README.fa.md")
+DOCUMENTS = ("LICENSE", "README.md", "README.fa.md", "TRADEMARK.md")
 OPTIONAL_DOCUMENTS = ("UPSTREAM_README.md",)
 
 
@@ -87,6 +88,38 @@ def package_target(
     return archive_path
 
 
+def package_termux(
+    project_root: Path,
+    binaries_dir: Path,
+    output_dir: Path,
+    tag: str,
+) -> Path:
+    binary = binaries_dir / "oberon-android-arm64"
+    if not binary.is_file():
+        raise FileNotFoundError(f"Missing Android build output for Termux: {binary}")
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    archive_path = output_dir / f"oberon-{tag}-termux-aarch64.tar.gz"
+
+    with tempfile.TemporaryDirectory(prefix="oberon-termux-") as temp_dir:
+        staging = Path(temp_dir)
+        shutil.copy2(binary, staging / "oberon")
+        shutil.copy2(project_root / "scripts" / "install-termux.sh", staging / "install-termux.sh")
+        for document in DOCUMENTS:
+            shutil.copy2(project_root / document, staging / document)
+        for document in OPTIONAL_DOCUMENTS:
+            source = project_root / document
+            if source.is_file():
+                shutil.copy2(source, staging / document)
+
+        with tarfile.open(archive_path, mode="w:gz") as archive:
+            for path in sorted(staging.rglob("*")):
+                if path.is_file():
+                    archive.add(path, arcname=path.relative_to(staging).as_posix(), recursive=False)
+
+    return archive_path
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--tag", required=True, help="Version tag, for example v0.4.4")
@@ -109,6 +142,7 @@ def main() -> None:
         )
         for os_name, architecture in TARGETS
     ]
+    archives.append(package_termux(project_root, args.binaries, args.output, args.tag))
 
     # Publish standalone Windows executables in addition to the archives so
     # users can download the binary directly when they already have Wintun.

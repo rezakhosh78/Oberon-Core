@@ -96,6 +96,13 @@ jobs:
       - name: Build all supported targets
         run: bash ./scripts/build-matrix.sh "$RUNNER_TEMP/oberon-binaries"
 
+      - name: Build Android ARM64 CLI
+        env:
+          GOOS: android
+          GOARCH: arm64
+          CGO_ENABLED: "0"
+        run: go build -trimpath -o "$RUNNER_TEMP/oberon-binaries/oberon-android-arm64" .
+
       - name: Package release assets
         env:
           TAG_NAME: ${{ needs.validate.outputs.tag_name }}

@@ -1,6 +1,6 @@
 # Oberon 🚀
 
-[![Build](https://github.com/oberon-core/oberon/actions/workflows/build.yml/badge.svg)](https://github.com/oberon-core/oberon/actions/workflows/build.yml) [![Version](https://img.shields.io/badge/version-0.4.4-6f42c1)](https://github.com/oberon-core/oberon) [![Go](https://img.shields.io/badge/Go-1.25%2B-00ADD8?logo=go)](https://go.dev/) [![License](https://img.shields.io/github/license/oberon-core/oberon)](LICENSE)
+[![Build](https://github.com/oberon-core/oberon/actions/workflows/build.yml/badge.svg)](https://github.com/oberon-core/oberon/actions/workflows/build.yml) [![Version](https://img.shields.io/badge/version-0.4.3-6f42c1)](https://github.com/oberon-core/oberon) [![Go](https://img.shields.io/badge/Go-1.25%2B-00ADD8?logo=go)](https://go.dev/) [![License](https://img.shields.io/github/license/oberon-core/oberon)](LICENSE)
 
 **An AmneziaWG WARP client for profile management, endpoint discovery, and private local proxies.**
 
@@ -13,6 +13,7 @@
 - 🪄 **One-time first-run setup:** the TUI registers and saves a profile only when no valid profile is found. Later connections reuse its key.
 - 🔎 **Endpoint scan on every connection:** Oberon tests candidates, shows live progress, and selects the fastest successful handshake.
 - 🔌 **Two connection modes:** local SOCKS5 and HTTP proxies, or a full-system tunnel on Linux and Windows.
+- 📱 **Android and Termux:** an Android ARM64 command-line build and a Termux bundle; Android supports proxy mode, not a system-wide tunnel. The Android build is not an APK.
 - 🔑 **Profile control:** browse working endpoints, or create a fresh WARP key and apply it to a saved profile with a backup.
 - 🎨 **Full-screen terminal UI:** English menus, consistent pages, colored scan progress, and animated registration and connection indicators.
 
@@ -40,6 +41,28 @@ On Windows PowerShell:
 go build -trimpath -o .\oberon.exe .
 .\oberon.exe
 ```
+
+## 📱 Android and Termux
+
+Releases include `oberon-<tag>-android-arm64.tar.gz`, an Android ARM64 command-line build, and `oberon-<tag>-termux-aarch64.tar.gz`, a Termux bundle with an installer. The Android build is a command-line executable, not an APK.
+
+In Termux, extract the bundle and install Oberon into Termux's `bin` directory:
+Replace `<tag>` with the version tag in the downloaded archive name.
+
+```sh
+tar -xzf oberon-<tag>-termux-aarch64.tar.gz
+bash ./install-termux.sh
+oberon --version
+```
+
+Android currently supports Oberon's local proxy mode. Create a profile and connect through SOCKS5 and HTTP:
+
+```sh
+oberon warp create -out warp-awg.conf
+oberon connect -config warp-awg.conf -socks 127.0.0.1:1717 -http 127.0.0.1:1718
+```
+
+The Android build does not configure the device's system routes or create a system TUN interface.
 
 ## ▶️ Connect with the TUI
 
@@ -133,7 +156,7 @@ The build matrix is for POSIX shells. On Windows, build directly with Go or set 
 
 The **Release Oberon** workflow runs when a `vMAJOR.MINOR.PATCH` tag is pushed, or manually from **Actions → Release Oberon → Run workflow**. Enter the release tag in the `tag_name` field, such as `v0.4.4`.
 
-The tag must match `Version` in `version.go`. For a manual run, a new tag is created at the selected commit; an existing tag is accepted only when it points to that same commit. The workflow runs tests, builds every target in `scripts/build-matrix.sh`, packages platform archives, and attaches standalone Windows `.exe` files for amd64, arm64, and 386 alongside the Windows archives. SHA-256 files and a combined `SHA256SUMS.txt` are included. Windows archives include the Wintun setup script.
+The tag must match `Version` in `version.go`. For a manual run, a new tag is created at the selected commit; an existing tag is accepted only when it points to that same commit. The workflow runs tests, builds every target in `scripts/build-matrix.sh`, builds an Android ARM64 executable, packages platform archives, and attaches a Termux ARM64 bundle plus standalone Windows `.exe` files for amd64, arm64, and 386. SHA-256 files and a combined `SHA256SUMS.txt` are included. Windows archives include the Wintun setup script.
 
 ## 🔐 Security and profile handling
 
@@ -153,5 +176,5 @@ When reporting an issue, include the OS, architecture, Oberon version, command u
 
 ## 📜 License and notices
 
-Oberon is distributed under the MIT License. The project license keeps the original WireGuard copyright notice, and upstream notices in source files remain in effect. See `LICENSE` for the terms and `UPSTREAM_README.md` for AmneziaWG background.
+Oberon is distributed under the GNU Affero General Public License v3.0 only (`AGPL-3.0-only`). If you run a modified version as a network service, AGPL requires offering its Corresponding Source to users interacting with it remotely. Source files with separate copyright or SPDX notices remain subject to those notices. Oberon's name and branding are covered by `TRADEMARK.md`.
 

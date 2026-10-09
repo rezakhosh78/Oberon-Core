@@ -1,6 +1,6 @@
 # Oberon 🚀
 
-[![Build](https://github.com/oberon-core/oberon/actions/workflows/build.yml/badge.svg)](https://github.com/oberon-core/oberon/actions/workflows/build.yml) [![Version](https://img.shields.io/badge/version-0.4.4-6f42c1)](https://github.com/oberon-core/oberon) [![Go](https://img.shields.io/badge/Go-1.25%2B-00ADD8?logo=go)](https://go.dev/) [![License](https://img.shields.io/github/license/oberon-core/oberon)](LICENSE)
+[![Build](https://github.com/oberon-core/oberon/actions/workflows/build.yml/badge.svg)](https://github.com/oberon-core/oberon/actions/workflows/build.yml) [![Version](https://img.shields.io/badge/version-0.4.3-6f42c1)](https://github.com/oberon-core/oberon) [![Go](https://img.shields.io/badge/Go-1.25%2B-00ADD8?logo=go)](https://go.dev/) [![License](https://img.shields.io/github/license/oberon-core/oberon)](LICENSE)
 
 **کلاینت AmneziaWG WARP برای مدیریت پروفایل، اسکن اندپوینت و پراکسی محلی امن**
 
@@ -13,6 +13,7 @@
 - 🪄 **راه‌اندازی خودکار بار اول:** اگر پروفایل معتبری پیدا نشود، TUI فقط یک‌بار حساب WARP را ثبت و پروفایل را ذخیره می‌کند؛ اتصال‌های بعدی همان کلید را استفاده می‌کنند.
 - 🔎 **اسکن در هر اتصال:** اندپوینت‌ها پیش از اتصال آزمایش می‌شوند، پیشرفت اسکن نمایش داده می‌شود و سریع‌ترین هندشیک موفق انتخاب می‌شود.
 - 🔌 **دو روش اتصال:** پراکسی محلی SOCKS5 و HTTP یا تونل سراسری در Linux و Windows.
+- 📱 **Android و Termux:** خروجی خط فرمان Android با معماری ARM64 و بستهٔ نصب Termux؛ در Android فقط حالت پراکسی در دسترس است و تونل سراسری پشتیبانی نمی‌شود. خروجی Android فایل APK نیست.
 - 🔑 **مدیریت پروفایل:** انتخاب دستی اندپوینت‌های فعال یا ساخت کلید WARP تازه و اعمال آن روی پروفایل همراه با نگهداری نسخهٔ پشتیبان.
 - 🎨 **رابط تمام‌صفحه:** منوهای انگلیسی، صفحه‌های هم‌قالب، نوار رنگی اسکن و انیمیشن ثبت کلید و راه‌اندازی اتصال.
 
@@ -40,6 +41,28 @@ go build -trimpath -o oberon .
 go build -trimpath -o .\oberon.exe .
 .\oberon.exe
 ```
+
+## 📱 Android و Termux
+
+ریلیزها شامل فایل `oberon-<tag>-android-arm64.tar.gz` برای اجرای خط فرمان Android و فایل `oberon-<tag>-termux-aarch64.tar.gz` همراه با نصب‌کنندهٔ Termux هستند. خروجی Android فایل APK نیست.
+
+در Termux بسته را استخراج و Oberon را در پوشهٔ `bin` نصب کنید:
+به‌جای `<tag>` نام تگ نسخهٔ موجود در فایل دانلودشده را قرار دهید.
+
+```sh
+tar -xzf oberon-<tag>-termux-aarch64.tar.gz
+bash ./install-termux.sh
+oberon --version
+```
+
+در Android فعلاً از حالت پراکسی محلی استفاده کنید. برای ساخت پروفایل و اتصال با SOCKS5 و HTTP:
+
+```sh
+oberon warp create -out warp-awg.conf
+oberon connect -config warp-awg.conf -socks 127.0.0.1:1717 -http 127.0.0.1:1718
+```
+
+خروجی Android مسیرهای شبکهٔ سیستم را تنظیم نمی‌کند و رابط TUN سراسری نمی‌سازد.
 
 ## ▶️ اتصال با TUI
 
@@ -133,7 +156,7 @@ bash ./scripts/build-matrix.sh ./dist
 
 ورک‌فلو **Release Oberon** با push کردن تگ `vMAJOR.MINOR.PATCH` اجرا می‌شود؛ همچنین می‌توانید از مسیر **Actions → Release Oberon → Run workflow** آن را دستی اجرا کنید و نام تگ، مثل `v0.4.4`، را در فیلد `tag_name` وارد کنید.
 
-تگ باید با مقدار `Version` در `version.go` یکسان باشد. در اجرای دستی، اگر تگ وجود نداشته باشد روی کامیت انتخاب‌شده ساخته می‌شود؛ تگ موجود فقط وقتی پذیرفته می‌شود که به همان کامیت اشاره کند. ورک‌فلو تست‌ها را اجرا می‌کند، همهٔ هدف‌های `scripts/build-matrix.sh` را می‌سازد و آرشیوهای هر پلتفرم را آماده می‌کند. فایل‌های اجرایی مستقل Windows با معماری‌های amd64، arm64 و 386 نیز در کنار آرشیوها به ریلیز افزوده می‌شوند. فایل‌های SHA-256 و `SHA256SUMS.txt` هم پیوست می‌شوند. آرشیوهای Windows شامل اسکریپت نصب Wintun هستند.
+تگ باید با مقدار `Version` در `version.go` یکسان باشد. در اجرای دستی، اگر تگ وجود نداشته باشد روی کامیت انتخاب‌شده ساخته می‌شود؛ تگ موجود فقط وقتی پذیرفته می‌شود که به همان کامیت اشاره کند. ورک‌فلو تست‌ها و همهٔ هدف‌های `scripts/build-matrix.sh` را اجرا می‌کند، خروجی Android ARM64 را می‌سازد و آرشیوهای پلتفرم‌ها را آماده می‌کند. بستهٔ Termux ARM64 و فایل‌های اجرایی مستقل Windows با معماری‌های amd64، arm64 و 386 نیز به ریلیز افزوده می‌شوند. فایل‌های SHA-256 و `SHA256SUMS.txt` هم پیوست می‌شوند. آرشیوهای Windows شامل اسکریپت نصب Wintun هستند.
 
 ## 🔐 امنیت و نگهداری پروفایل
 
@@ -153,5 +176,5 @@ bash ./scripts/build-matrix.sh ./dist
 
 ## 📜 مجوز و اعلان‌ها
 
-Oberon با مجوز MIT منتشر می‌شود. فایل مجوز، حق‌نشر اصلی WireGuard را حفظ می‌کند و اعلان‌های upstream در فایل‌های سورس نیز معتبر می‌مانند. متن مجوز در `LICENSE` و توضیحات پروژهٔ AmneziaWG در `UPSTREAM_README.md` قرار دارد.
+کد پروژهٔ Oberon تحت GNU Affero General Public License نسخهٔ ۳ (فقط همین نسخه؛ `AGPL-3.0-only`) منتشر می‌شود. اگر نسخهٔ تغییر‌یافته را به‌صورت سرویس شبکه‌ای اجرا کنید، AGPL دسترسی کاربران راه‌دور به کد متناظر همان نسخه را لازم می‌داند. فایل‌هایی که اعلان حق‌نشر یا SPDX جداگانه دارند، تابع همان مجوزهای اعلام‌شده‌اند. سیاست نام و هویت بصری Oberon در `TRADEMARK.md` آمده است.
 
