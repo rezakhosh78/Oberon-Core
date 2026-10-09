@@ -94,7 +94,7 @@ jobs:
         run: go test ./...
 
       - name: Build all supported targets
-        run: ./scripts/build-matrix.sh "$RUNNER_TEMP/oberon-binaries"
+        run: bash ./scripts/build-matrix.sh "$RUNNER_TEMP/oberon-binaries"
 
       - name: Package release assets
         env:
