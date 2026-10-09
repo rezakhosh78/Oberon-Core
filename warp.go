@@ -147,7 +147,7 @@ type warpRegistration struct {
 	Config struct {
 		ClientID  string `json:"client_id"`
 		Interface struct {
-			MTU       int    `json:"mtu"`
+			MTU       int `json:"mtu"`
 			Addresses struct {
 				V4 string `json:"v4"`
 				V6 string `json:"v6"`
@@ -170,7 +170,7 @@ func registerWarp(ctx context.Context, client *http.Client) (warpProfile, error)
 		return warpProfile{}, fmt.Errorf("generate X25519 key: %w", err)
 	}
 	payload, err := json.Marshal(map[string]string{
-		"key":       base64.StdEncoding.EncodeToString(private.PublicKey().Bytes()),
+		"key":        base64.StdEncoding.EncodeToString(private.PublicKey().Bytes()),
 		"install_id": "",
 		"fcm_token":  "",
 		"tos":        time.Now().UTC().Format("2006-01-02T15:04:05.000Z"),

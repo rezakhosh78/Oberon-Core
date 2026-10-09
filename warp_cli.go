@@ -65,8 +65,8 @@ func runCreateCLI(args []string) error {
 func warpProfileConfig(profile warpProfile) awgConfig {
 	return awgConfig{iface: map[string]string{
 		"privatekey": profile.PrivateKey,
-		"address": profile.Address,
-		"dns": "1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001",
-		"mtu": fmt.Sprint(profile.MTU), "jc": "5", "jmin": "10", "jmax": "40", "s1": "0", "s2": "0", "h1": "1", "h2": "2", "h3": "3", "h4": "4",
+		"address":    profile.Address,
+		"dns":        "1.1.1.1, 1.0.0.1, 2606:4700:4700::1111, 2606:4700:4700::1001",
+		"mtu":        fmt.Sprint(profile.MTU), "jc": "5", "jmin": "10", "jmax": "40", "s1": "0", "s2": "0", "h1": "1", "h2": "2", "h3": "3", "h4": "4",
 	}, peer: map[string]string{"publickey": profile.PeerPublicKey, "endpoint": profile.Endpoint, "allowedips": "0.0.0.0/0, ::/0"}}
 }

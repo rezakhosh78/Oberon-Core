@@ -22,12 +22,20 @@ PublicKey = AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=
 AllowedIPs = 0.0.0.0/0, ::/0
 Endpoint = 162.159.192.1:2408
 `
-	if err := os.WriteFile(path, []byte(profile), 0600); err != nil { t.Fatal(err) }
+	if err := os.WriteFile(path, []byte(profile), 0600); err != nil {
+		t.Fatal(err)
+	}
 	cfg, err := parseAWGConfig(path)
-	if err != nil { t.Fatal(err) }
+	if err != nil {
+		t.Fatal(err)
+	}
 	uapi, err := cfg.uapi("")
-	if err != nil { t.Fatal(err) }
+	if err != nil {
+		t.Fatal(err)
+	}
 	for _, expected := range []string{"jc=5", "jmin=10", "jmax=40", "allowed_ip=0.0.0.0/0", "endpoint=162.159.192.1:2408"} {
-		if !strings.Contains(uapi, expected) { t.Errorf("control config lacks %q", expected) }
+		if !strings.Contains(uapi, expected) {
+			t.Errorf("control config lacks %q", expected)
+		}
 	}
 }

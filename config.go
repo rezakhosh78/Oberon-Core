@@ -244,17 +244,28 @@ func configureLinuxInterface(name string, cfg awgConfig) (func(), error) {
 	fullV4, fullV6 := false, false
 	for _, raw := range allowed {
 		switch strings.TrimSpace(raw) {
-		case "0.0.0.0/0": fullV4 = true
-		case "::/0": fullV6 = true
+		case "0.0.0.0/0":
+			fullV4 = true
+		case "::/0":
+			fullV6 = true
 		}
 	}
 	if fullV4 || fullV6 {
 		const mark = "51820"
-		for _, family := range []struct{ on bool; flag string }{{fullV4, "-4"}, {fullV6, "-6"}} {
-			if !family.on { continue }
-			if err := run(family.flag, "route", "add", "default", "dev", name, "table", mark); err != nil { return rollback(err) }
+		for _, family := range []struct {
+			on   bool
+			flag string
+		}{{fullV4, "-4"}, {fullV6, "-6"}} {
+			if !family.on {
+				continue
+			}
+			if err := run(family.flag, "route", "add", "default", "dev", name, "table", mark); err != nil {
+				return rollback(err)
+			}
 			cleanupCommands = append(cleanupCommands, []string{family.flag, "route", "flush", "table", mark})
-			if err := run(family.flag, "rule", "add", "priority", "1000", "not", "fwmark", mark, "table", mark); err != nil { return rollback(err) }
+			if err := run(family.flag, "rule", "add", "priority", "1000", "not", "fwmark", mark, "table", mark); err != nil {
+				return rollback(err)
+			}
 			cleanupCommands = append(cleanupCommands, []string{family.flag, "rule", "del", "priority", "1000", "not", "fwmark", mark, "table", mark})
 		}
 	}
@@ -439,7 +450,9 @@ func configureWindowsInterface(name string, cfg awgConfig) (func(), error) {
 
 func hasDefaultRoute(cfg awgConfig) bool {
 	for _, raw := range strings.Split(cfg.peer["allowedips"], ",") {
-		if prefix := strings.TrimSpace(raw); prefix == "0.0.0.0/0" || prefix == "::/0" { return true }
+		if prefix := strings.TrimSpace(raw); prefix == "0.0.0.0/0" || prefix == "::/0" {
+			return true
+		}
 	}
 	return false
 }
@@ -452,16 +465,24 @@ func probeEndpointConfig(cfg awgConfig, candidate string, timeout time.Duration)
 	tdev := tuntest.NewChannelTUN().TUN()
 	dev := device.NewDevice(tdev, conn.NewDefaultBind(), device.NewLogger(device.LogLevelSilent, ""))
 	defer dev.Close()
-	if err := dev.Up(); err != nil { return 0, false, err }
+	if err := dev.Up(); err != nil {
+		return 0, false, err
+	}
 	uapi, err := cfg.uapi(candidate)
-	if err != nil { return 0, false, err }
+	if err != nil {
+		return 0, false, err
+	}
 	started := time.Now()
 	uapi = strings.TrimSuffix(uapi, "\n\n") + "\npersistent_keepalive_interval=1\n\n"
-	if err := dev.IpcSet(uapi); err != nil { return 0, false, err }
+	if err := dev.IpcSet(uapi); err != nil {
+		return 0, false, err
+	}
 	deadline := time.Now().Add(timeout)
 	for time.Now().Before(deadline) {
 		state, err := dev.IpcGet()
-		if err != nil { return 0, false, err }
+		if err != nil {
+			return 0, false, err
+		}
 		if strings.Contains(state, "last_handshake_time_sec=0\n") == false {
 			return time.Since(started), true, nil
 		}
@@ -472,8 +493,14 @@ func probeEndpointConfig(cfg awgConfig, candidate string, timeout time.Duration)
 
 func normalizeEndpoint(raw string) (string, error) {
 	host, port, err := net.SplitHostPort(strings.TrimSpace(raw))
-	if err != nil { return "", err }
-	if net.ParseIP(host) == nil { return "", fmt.Errorf("endpoint host must be an IP address: %q", host) }
-	if n, err := strconv.Atoi(port); err != nil || n < 1 || n > 65535 { return "", fmt.Errorf("invalid endpoint port %q", port) }
+	if err != nil {
+		return "", err
+	}
+	if net.ParseIP(host) == nil {
+		return "", fmt.Errorf("endpoint host must be an IP address: %q", host)
+	}
+	if n, err := strconv.Atoi(port); err != nil || n < 1 || n > 65535 {
+		return "", fmt.Errorf("invalid endpoint port %q", port)
+	}
 	return net.JoinHostPort(host, port), nil
 }

@@ -23,9 +23,9 @@ func enableTerminalOutput() func() {
 
 func withRawTerminal(read func() error) error {
 	const (
-		enableProcessedInput      = 0x0001
-		enableLineInput           = 0x0002
-		enableEchoInput           = 0x0004
+		enableProcessedInput       = 0x0001
+		enableLineInput            = 0x0002
+		enableEchoInput            = 0x0004
 		enableVirtualTerminalInput = 0x0200
 	)
 	input := windows.Handle(os.Stdin.Fd())

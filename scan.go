@@ -28,26 +28,48 @@ func runScanCLI(args []string) error {
 	workers := fs.Int("workers", 16, "parallel endpoint checks")
 	timeout := fs.Duration("timeout", 900*time.Millisecond, "handshake timeout per endpoint")
 	if err := fs.Parse(args); err != nil {
-		if err == flag.ErrHelp { return nil }
+		if err == flag.ErrHelp {
+			return nil
+		}
 		return err
 	}
-	if strings.ToLower(*protocol) != "awg" { return fmt.Errorf("only -p awg is supported") }
-	if *configPath == "" { *configPath = *configPathLong }
-	if *configPath == "" && fs.NArg() > 0 { *configPath = fs.Arg(0) }
-	if *configPath == "" { return fmt.Errorf("usage: oberon scan -p awg -P -conf profile.conf [-o output.conf] [-mode fast|all]") }
+	if strings.ToLower(*protocol) != "awg" {
+		return fmt.Errorf("only -p awg is supported")
+	}
+	if *configPath == "" {
+		*configPath = *configPathLong
+	}
+	if *configPath == "" && fs.NArg() > 0 {
+		*configPath = fs.Arg(0)
+	}
+	if *configPath == "" {
+		return fmt.Errorf("usage: oberon scan -p awg -P -conf profile.conf [-o output.conf] [-mode fast|all]")
+	}
 	cfg, err := parseAWGConfig(*configPath)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 	candidates, err := endpointCandidates(strings.ToLower(*mode))
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 	hits, err := scanEndpointsWithProgress(cfg, candidates, *workers, *timeout, newScanProgressReporter(len(candidates)))
-	if err != nil { return err }
-	if len(hits) == 0 { return fmt.Errorf("no endpoint completed an AmneziaWG handshake") }
+	if err != nil {
+		return err
+	}
+	if len(hits) == 0 {
+		return fmt.Errorf("no endpoint completed an AmneziaWG handshake")
+	}
 	if *printProfile {
 		content, err := os.ReadFile(*configPath)
-		if err != nil { return err }
+		if err != nil {
+			return err
+		}
 		updated := replacePeerEndpoint(string(content), hits[0].Endpoint)
 		if *outputPath != "" {
-			if err := os.WriteFile(*outputPath, []byte(updated), 0600); err != nil { return err }
+			if err := os.WriteFile(*outputPath, []byte(updated), 0600); err != nil {
+				return err
+			}
 			fmt.Fprintf(os.Stderr, "Saved profile with %s to %s\n", hits[0].Endpoint, *outputPath)
 			return nil
 		}
@@ -74,14 +96,20 @@ func endpointCandidates(mode string) ([]string, error) {
 		"188.114.96.166:878", "188.114.96.206:878", "162.159.192.1:2408", "8.34.146.150:1701",
 		"162.159.192.96:939",
 	}
-	if mode == "fast" { return fast, nil }
-	if mode != "all" { return nil, fmt.Errorf("unknown scan mode %q; choose fast or all", mode) }
+	if mode == "fast" {
+		return fast, nil
+	}
+	if mode != "all" {
+		return nil, fmt.Errorf("unknown scan mode %q; choose fast or all", mode)
+	}
 	subnets := []string{"188.114.96", "188.114.97", "162.159.195", "8.6.112"}
 	ports := []int{2408, 500, 1701, 4500}
 	all := make([]string, 0, len(subnets)*254*len(ports))
 	for _, subnet := range subnets {
 		for host := 1; host < 255; host++ {
-			for _, port := range ports { all = append(all, net.JoinHostPort(subnet+"."+strconv.Itoa(host), strconv.Itoa(port))) }
+			for _, port := range ports {
+				all = append(all, net.JoinHostPort(subnet+"."+strconv.Itoa(host), strconv.Itoa(port)))
+			}
 		}
 	}
 	return all, nil
@@ -98,8 +126,18 @@ type scanProgress struct {
 }
 
 func scanEndpointsWithProgress(cfg awgConfig, candidates []string, workers int, timeout time.Duration, report func(scanProgress)) ([]endpointHit, error) {
-	if workers < 1 { workers = 1 }; if workers > 64 { workers = 64 }
-	if timeout < 100*time.Millisecond { timeout = 100*time.Millisecond }; if timeout > 5*time.Second { timeout = 5*time.Second }
+	if workers < 1 {
+		workers = 1
+	}
+	if workers > 64 {
+		workers = 64
+	}
+	if timeout < 100*time.Millisecond {
+		timeout = 100 * time.Millisecond
+	}
+	if timeout > 5*time.Second {
+		timeout = 5 * time.Second
+	}
 	jobs := make(chan string)
 	hits := make([]endpointHit, 0)
 	var mu sync.Mutex
@@ -118,9 +156,16 @@ func scanEndpointsWithProgress(cfg awgConfig, candidates []string, workers int, 
 					started := time.Now()
 					latency, ok, probeErr := probeEndpointConfig(cfg, endpoint, timeout)
 					err = probeErr
-					if ok { latency = time.Since(started); mu.Lock(); hits = append(hits, endpointHit{endpoint, latency}); mu.Unlock() }
+					if ok {
+						latency = time.Since(started)
+						mu.Lock()
+						hits = append(hits, endpointHit{endpoint, latency})
+						mu.Unlock()
+					}
 				}
-				if err != nil { errOnce.Do(func() { firstErr = err }) }
+				if err != nil {
+					errOnce.Do(func() { firstErr = err })
+				}
 				progressMu.Lock()
 				mu.Lock()
 				tested++
@@ -133,10 +178,14 @@ func scanEndpointsWithProgress(cfg awgConfig, candidates []string, workers int, 
 			}
 		}()
 	}
-	for _, candidate := range candidates { jobs <- candidate }
+	for _, candidate := range candidates {
+		jobs <- candidate
+	}
 	close(jobs)
 	wg.Wait()
-	if len(hits) == 0 && firstErr != nil { return nil, firstErr }
+	if len(hits) == 0 && firstErr != nil {
+		return nil, firstErr
+	}
 	sort.Slice(hits, func(i, j int) bool { return hits[i].Latency < hits[j].Latency })
 	return hits, nil
 }

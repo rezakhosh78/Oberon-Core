@@ -410,7 +410,6 @@ func discoverAWGProfiles() []string {
 	return discoverAWGProfilesIn(directories)
 }
 
-
 func discoverAWGProfilesIn(directories []string) []string {
 	seen := make(map[string]bool)
 	var profiles []string

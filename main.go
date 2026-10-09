@@ -69,16 +69,28 @@ func main() {
 		return
 	}
 	if len(os.Args) == 1 || os.Args[1] == "tui" {
-		if err := runTUI(); err != nil { fmt.Fprintln(os.Stderr, err); os.Exit(ExitSetupFailed) }
+		if err := runTUI(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(ExitSetupFailed)
+		}
 		return
 	}
 	if os.Args[1] == "scan" {
-		if err := runScanCLI(os.Args[2:]); err != nil { fmt.Fprintln(os.Stderr, err); os.Exit(ExitSetupFailed) }
+		if err := runScanCLI(os.Args[2:]); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(ExitSetupFailed)
+		}
 		return
 	}
 	if os.Args[1] == "run" {
-		if len(os.Args) != 3 { printUsage(); os.Exit(ExitSetupFailed) }
-		if err := runConfig(os.Args[2]); err != nil { fmt.Fprintln(os.Stderr, err); os.Exit(ExitSetupFailed) }
+		if len(os.Args) != 3 {
+			printUsage()
+			os.Exit(ExitSetupFailed)
+		}
+		if err := runConfig(os.Args[2]); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(ExitSetupFailed)
+		}
 		return
 	}
 	if len(os.Args) >= 2 && os.Args[1] == "warp" {

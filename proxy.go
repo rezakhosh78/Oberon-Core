@@ -336,9 +336,9 @@ func newHTTPProxyHandler(dialer interface {
 	DialContext(context.Context, string, string) (net.Conn, error)
 }) http.Handler {
 	transport := &http.Transport{
-		DialContext:         dialer.DialContext,
-		DisableKeepAlives:   true,
-		ForceAttemptHTTP2:   false,
+		DialContext:           dialer.DialContext,
+		DisableKeepAlives:     true,
+		ForceAttemptHTTP2:     false,
 		ResponseHeaderTimeout: 30 * time.Second,
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
