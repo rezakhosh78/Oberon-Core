@@ -74,7 +74,7 @@ jobs:
           fi
 
   build:
-    name: Build release archives
+    name: Build release assets
     needs: validate
     runs-on: ubuntu-latest
     steps:
@@ -96,7 +96,7 @@ jobs:
       - name: Build all supported targets
         run: ./scripts/build-matrix.sh "$RUNNER_TEMP/oberon-binaries"
 
-      - name: Package release archives
+      - name: Package release assets
         env:
           TAG_NAME: ${{ needs.validate.outputs.tag_name }}
         run: >-
@@ -105,7 +105,7 @@ jobs:
           --binaries "$RUNNER_TEMP/oberon-binaries"
           --output dist
 
-      - name: Upload release archives
+      - name: Upload release assets
         uses: actions/upload-artifact@v4
         with:
           name: oberon-release-assets
@@ -120,7 +120,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Download release archives
+      - name: Download release assets
         uses: actions/download-artifact@v4
         with:
           name: oberon-release-assets
@@ -131,16 +131,16 @@ jobs:
         run: |
           cd dist
           shopt -s nullglob
-          archives=(oberon-v*.tar.gz oberon-v*.zip)
-          if (( ${#archives[@]} == 0 )); then
-            echo "No release archives were downloaded." >&2
+          assets=(oberon-v*.tar.gz oberon-v*.zip oberon-v*-windows-*.exe)
+          if (( ${#assets[@]} == 0 )); then
+            echo "No release assets were downloaded." >&2
             exit 1
           fi
 
-          for archive in "${archives[@]}"; do
-            sha256sum "$archive" > "$archive.sha256"
+          for asset in "${assets[@]}"; do
+            sha256sum "$asset" > "$asset.sha256"
           done
-          sha256sum "${archives[@]}" > SHA256SUMS.txt
+          sha256sum "${assets[@]}" > SHA256SUMS.txt
           cat SHA256SUMS.txt
 
       - name: Create GitHub release
