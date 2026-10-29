@@ -8,6 +8,14 @@
 
 🌐 Oberon creates and reuses WARP profiles, checks which endpoints complete an AmneziaWG handshake, and connects through local SOCKS5/HTTP proxies or a system tunnel.
 
+## Support
+TRON:
+TUnX9wBWzhD2AK9GqB9FJekKaxCvYJNh18
+
+Nowpayment:
+https://nowpayments.io/donation/pingplas
+
+
 ## ✨ Highlights
 
 - 🪄 **One-time first-run setup:** the TUI registers and saves a profile only when no valid profile is found. Later connections reuse its key.
