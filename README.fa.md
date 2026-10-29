@@ -7,7 +7,7 @@
 
 🌐 Oberon پروفایل WARP را می‌سازد و نگه می‌دارد، اندپوینت‌هایی را که هندشیک AmneziaWG موفق دارند بررسی می‌کند و از طریق پراکسی SOCKS5 و HTTP یا تونل سراسری به آن‌ها وصل می‌شود.
 
-## Support
+## حمایت
 TRON:
 TUnX9wBWzhD2AK9GqB9FJekKaxCvYJNh18
 
