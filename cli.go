@@ -45,12 +45,13 @@ func printCLIUsage() {
 Commands:
   create  Register WARP, scan endpoints, and save an AWG profile
   scan    Scan endpoints in an existing AWG profile
-  connect Scan on every run, then start a tunnel or local proxies (Android uses proxies)
+  connect Scan on every run, then start the tunnel or local proxies
   tui     Open the interactive terminal menu
 
 Examples:
   oberon create -out warp-awg.conf
-  oberon scan -config warp-awg.conf -mode fast
+  oberon scan -config warp-awg.conf -mode fast -family ipv4
+  oberon scan -config warp-awg.conf -mode all -family ipv6
   oberon connect -config warp-awg.conf
   oberon connect -config warp-awg.conf -socks 127.0.0.1:1717 -http 127.0.0.1:1718
 

@@ -26,6 +26,11 @@ type pickerItem struct {
 	detail   string
 }
 
+type scanSelection struct {
+	family string
+	mode   string
+}
+
 func runTUI() error {
 	restoreOutput := enableTerminalOutput()
 	defer restoreOutput()
@@ -281,8 +286,18 @@ func tuiConnect(in *bufio.Reader) error {
 		return err
 	}
 
-	candidates := mustFastCandidates()
-	scanLines := []string{filepath.Base(profilePath), fmt.Sprintf("Candidates: %d", len(candidates)), "Live scan progress appears below."}
+	selection, ok, err := chooseScanSelection(in)
+	if err != nil || !ok {
+		return err
+	}
+	candidates, err := endpointCandidatesForFamily(selection.mode, selection.family)
+	if err != nil {
+		return err
+	}
+	if err := ensureScanFamilyAvailable(selection.family); err != nil {
+		return err
+	}
+	scanLines := []string{filepath.Base(profilePath), "IP family: " + strings.ToUpper(selection.family), "Scan mode: " + selection.mode, fmt.Sprintf("Candidates: %d", len(candidates)), "Live scan progress appears below."}
 	if createdProfile {
 		scanLines = append(scanLines, "New profile saved; its WARP key will be reused next time.")
 	}
@@ -367,8 +382,18 @@ func tuiScan(in *bufio.Reader) error {
 		return err
 	}
 
-	candidates := mustFastCandidates()
-	drawTUIPage("SCANNING ENDPOINTS", "Checking every candidate for a successful handshake.", filepath.Base(profilePath), fmt.Sprintf("Candidates: %d", len(candidates)), "Live scan progress appears below.")
+	selection, ok, err := chooseScanSelection(in)
+	if err != nil || !ok {
+		return err
+	}
+	candidates, err := endpointCandidatesForFamily(selection.mode, selection.family)
+	if err != nil {
+		return err
+	}
+	if err := ensureScanFamilyAvailable(selection.family); err != nil {
+		return err
+	}
+	drawTUIPage("SCANNING ENDPOINTS", "Checking every candidate for a successful handshake.", filepath.Base(profilePath), "IP family: "+strings.ToUpper(selection.family), "Scan mode: "+selection.mode, fmt.Sprintf("Candidates: %d", len(candidates)), "Live scan progress appears below.")
 	hits, err := scanEndpointsWithProgress(cfg, candidates, 16, 900*time.Millisecond, newScanProgressReporter(len(candidates)))
 	if err != nil {
 		return err
@@ -677,9 +702,24 @@ func readPickerKey(in *bufio.Reader) (string, error) {
 	return "", nil
 }
 
-func mustFastCandidates() []string {
-	candidates, _ := endpointCandidates("fast")
-	return candidates
+func chooseScanSelection(in *bufio.Reader) (scanSelection, bool, error) {
+	items := []pickerItem{
+		{category: "IPv4", title: "Fast sampled scan", detail: "5 addresses per subnet"},
+		{category: "IPv4", title: "Expanded scan", detail: "all 14 IPv4 subnets"},
+		{category: "IPv6", title: "Fast sampled scan", detail: "5 addresses per subnet"},
+		{category: "IPv6", title: "Expanded scan", detail: "256 samples per /48"},
+	}
+	index, ok, err := pickTUIItem(in, "CHOOSE SCAN TYPE", "Select an IP family and scan size.", "Expanded scans test many more endpoints and can take longer.", items)
+	if err != nil || !ok {
+		return scanSelection{}, ok, err
+	}
+	selections := []scanSelection{
+		{family: "ipv4", mode: "fast"},
+		{family: "ipv4", mode: "all"},
+		{family: "ipv6", mode: "fast"},
+		{family: "ipv6", mode: "all"},
+	}
+	return selections[index], true, nil
 }
 
 func replacePeerEndpoint(config, endpoint string) string {

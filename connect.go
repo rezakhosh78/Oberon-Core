@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"runtime"
 	"strings"
 	"time"
 )
@@ -14,6 +13,7 @@ func runConnectCLI(args []string) error {
 	config := flags.String("config", "", "AWG configuration file")
 	configAlias := flags.String("conf", "", "AWG configuration file (alias for -config)")
 	mode := flags.String("mode", "fast", "endpoint scan pool: fast or all")
+	family := flags.String("family", "ipv4", "endpoint address family: ipv4 or ipv6")
 	workers := flags.Int("workers", 16, "parallel endpoint checks")
 	timeout := flags.Duration("timeout", 900*time.Millisecond, "handshake timeout per endpoint")
 	socks := flags.String("socks", "", "start a local SOCKS5 proxy, for example 127.0.0.1:1717")
@@ -32,19 +32,18 @@ func runConnectCLI(args []string) error {
 		configPath = flags.Arg(0)
 	}
 	if configPath == "" {
-		return fmt.Errorf("usage: oberon connect -config profile.conf [-mode fast|all] [-socks 127.0.0.1:1717] [-http 127.0.0.1:1718]")
-	}
-	if runtime.GOOS == "android" && *socks == "" && *httpProxy == "" {
-		*socks = defaultSOCKSAddress
-		*httpProxy = defaultHTTPAddress
-		fmt.Fprintln(os.Stderr, "Android/Termux detected; using local SOCKS5 and HTTP proxies (no system TUN).")
+		return fmt.Errorf("usage: oberon connect -config profile.conf [-mode fast|all] [-family ipv4|ipv6] [-socks 127.0.0.1:1717] [-http 127.0.0.1:1718]")
 	}
 	cfg, err := parseAWGConfig(configPath)
 	if err != nil {
 		return err
 	}
-	candidates, err := endpointCandidates(strings.ToLower(*mode))
+	scanFamily := strings.ToLower(strings.TrimSpace(*family))
+	candidates, err := endpointCandidatesForFamily(*mode, scanFamily)
 	if err != nil {
+		return err
+	}
+	if err := ensureScanFamilyAvailable(scanFamily); err != nil {
 		return err
 	}
 	proxyMode := *socks != "" || *httpProxy != ""
@@ -69,7 +68,7 @@ func runConnectCLI(args []string) error {
 		}
 	}
 
-	fmt.Fprintf(os.Stderr, "Scanning endpoints before connecting (%d candidates)...\n", len(candidates))
+	fmt.Fprintf(os.Stderr, "Scanning %s endpoints before connecting (%d candidates)...\n", strings.ToUpper(scanFamily), len(candidates))
 	hits, err := scanEndpointsWithProgress(cfg, candidates, *workers, *timeout, newScanProgressReporter(len(candidates)))
 	if err != nil {
 		return err

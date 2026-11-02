@@ -17,8 +17,8 @@ func TestEndpointCandidatePoolsAndValidation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(all) != 4064 {
-		t.Fatalf("all pool has %d candidates, want 4064", len(all))
+	if len(all) < 14*254*4 {
+		t.Fatalf("all pool has %d candidates, want at least %d", len(all), 14*254*4)
 	}
 	if normalized, err := normalizeEndpoint("[2606:4700:100::1]:2408"); err != nil || normalized != "[2606:4700:100::1]:2408" {
 		t.Fatalf("IPv6 endpoint normalization = %q, %v", normalized, err)

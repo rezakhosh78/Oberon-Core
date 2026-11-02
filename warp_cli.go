@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"net"
 	"os"
 	"strings"
 	"time"
@@ -11,7 +12,7 @@ import (
 
 func runWarpCLI(args []string) error {
 	if len(args) == 0 || args[0] != "create" {
-		return fmt.Errorf("usage: oberon warp create [-endpoint host:port] [-out file] [-mode fast|all]")
+		return fmt.Errorf("usage: oberon warp create [-endpoint host:port] [-out file] [-mode fast|all] [-family ipv4|ipv6]")
 	}
 	return runCreateCLI(args[1:])
 }
@@ -21,6 +22,7 @@ func runCreateCLI(args []string) error {
 	endpoint := flags.String("endpoint", "", "also scan this endpoint")
 	output := flags.String("out", "warp-awg.conf", "write the generated profile to this file")
 	mode := flags.String("mode", "fast", "candidate set: fast or all")
+	family := flags.String("family", "ipv4", "endpoint address family: ipv4 or ipv6")
 	workers := flags.Int("workers", 16, "parallel endpoint checks")
 	probeTimeout := flags.Duration("timeout", 900*time.Millisecond, "handshake timeout per endpoint")
 	registrationTimeout := flags.Duration("registration-timeout", 20*time.Second, "WARP registration request timeout")
@@ -30,12 +32,28 @@ func runCreateCLI(args []string) error {
 		}
 		return err
 	}
-	candidates, err := endpointCandidates(strings.ToLower(*mode))
+	scanFamily := strings.ToLower(strings.TrimSpace(*family))
+	candidates, err := endpointCandidatesForFamily(*mode, scanFamily)
 	if err != nil {
 		return err
 	}
 	if *endpoint != "" {
-		candidates = append([]string{*endpoint}, candidates...)
+		endpoint, err := normalizeEndpoint(*endpoint)
+		if err != nil {
+			return fmt.Errorf("custom endpoint: %w", err)
+		}
+		endpointIP, _, err := net.SplitHostPort(endpoint)
+		if err != nil {
+			return fmt.Errorf("custom endpoint: %w", err)
+		}
+		isIPv6 := strings.Contains(endpointIP, ":")
+		if (isIPv6 && scanFamily != "ipv6") || (!isIPv6 && scanFamily != "ipv4") {
+			return fmt.Errorf("custom endpoint address family does not match -family %s", scanFamily)
+		}
+		candidates = append([]string{endpoint}, candidates...)
+	}
+	if err := ensureScanFamilyAvailable(scanFamily); err != nil {
+		return err
 	}
 	client := newWarpHTTPClient(*registrationTimeout)
 	ctx, cancel := context.WithTimeout(context.Background(), *registrationTimeout)
@@ -46,6 +64,7 @@ func runCreateCLI(args []string) error {
 		return err
 	}
 	cfg := warpProfileConfig(profile)
+	fmt.Fprintf(os.Stderr, "Scanning %s endpoints (%d candidates)...\n", strings.ToUpper(scanFamily), len(candidates))
 	hits, err := scanEndpointsWithProgress(cfg, candidates, *workers, *probeTimeout, newScanProgressReporter(len(candidates)))
 	if err != nil {
 		return err
